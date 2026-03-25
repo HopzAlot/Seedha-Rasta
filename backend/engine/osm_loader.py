@@ -83,6 +83,7 @@ def build_corridor(start, end, width):
 # 🌍 Core Loader (Corridor + Expansion)
 # ------------------------------
 def load_graph(start: dict, end: dict):
+    
     distance_km = haversine_km(start, end)
 
     # Initial corridor width
@@ -102,6 +103,7 @@ def load_graph(start: dict, end: dict):
         if cached:
             print(f"[osm_loader] Cache hit (width={width})")
             G = pickle.loads(cached)
+            G.graph["cache_status"] = "Loaded from cache"
             return normalize_graph_nodes(G)
 
         print(f"[osm_loader] Fetching corridor graph (width={width})")
@@ -137,6 +139,7 @@ def load_graph(start: dict, end: dict):
         # ------------------------------
         G = normalize_graph_nodes(G)
         G = preprocess_graph(G)
+        print("after preprocess")
 
         r.set(cache_key, pickle.dumps(G))
         print(f"[osm_loader] Cached graph (width={width})")

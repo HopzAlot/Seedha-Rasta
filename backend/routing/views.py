@@ -99,7 +99,8 @@ class OptimizeRouteAPIView(APIView):
         # ------------------------------
         created_at = G.graph.get("created_at")
         place_meta = G.graph.get("place", city_name)
-        cache_status = f"Graph loaded for {place_meta} (created at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(created_at))})"
+        cache= G.graph.get("cache_status", "Not cached")
+        cache_status = f"{cache} and Graph loaded for {place_meta} (created at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(created_at))})"
 
         # ------------------------------
         # 🔹 Step 7: Response

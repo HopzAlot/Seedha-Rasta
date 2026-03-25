@@ -41,8 +41,13 @@ def compute_path_fuel(G, path, vehicle):
 # ------------------------------
 def get_speed(edge):
     maxspeed = edge.get("maxspeed")
+
+    # ------------------------------
+    # Handle maxspeed
+    # ------------------------------
     if isinstance(maxspeed, list):
         maxspeed = maxspeed[0]
+
     if isinstance(maxspeed, str):
         if "mph" in maxspeed:
             return float(maxspeed.replace("mph", "").strip()) * 1.609
@@ -50,8 +55,15 @@ def get_speed(edge):
             return float(maxspeed)
         except:
             pass
-    # fallback based on road type
+
+    # ------------------------------
+    # Handle highway type
+    # ------------------------------
     highway = edge.get("highway", "")
+
+    if isinstance(highway, list):
+        highway = highway[0]  # 👈 FIX HERE
+
     DEFAULT_SPEEDS = {
         "motorway": 90,
         "trunk": 80,
@@ -61,8 +73,8 @@ def get_speed(edge):
         "residential": 30,
         "service": 20
     }
-    return DEFAULT_SPEEDS.get(highway, 40)
 
+    return DEFAULT_SPEEDS.get(highway, 40)
 # ------------------------------
 # Haversine distance (accepts nodes or lat/lng)
 # ------------------------------

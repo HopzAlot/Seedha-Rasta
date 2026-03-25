@@ -13,7 +13,7 @@ def compute_edge_cost(edge, vehicle):
     # ------------------------------
     # Distance (already in km)
     # ------------------------------
-    length_km = edge.get("length", 0)
+    length_km = edge.get("length", 0)/1000
 
     # ------------------------------
     # Travel time (minutes → hours)
