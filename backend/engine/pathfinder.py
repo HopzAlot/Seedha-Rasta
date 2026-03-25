@@ -26,7 +26,9 @@ def fuel_optimized_path(G, source, target, vehicle):
                 path.append(curr)
                 curr = parent[curr]
             path.reverse()
-            return fuel_cost, dist, time_min, path
+            fuel_price = vehicle.get("fuel_price", 280)
+            cost_pkr = fuel_cost * fuel_price
+            return fuel_cost, cost_pkr, dist, time_min, path
 
         for neighbor in G.neighbors(node):
             edges = G.get_edge_data(node, neighbor)
@@ -47,7 +49,7 @@ def fuel_optimized_path(G, source, target, vehicle):
             mileage = vehicle.get("mileage", 15)
             idle_rate = vehicle.get("idle_consumption", 0.2)
             avg_speed = 45
-            traffic_factor = 0.1
+            traffic_factor = 0.4
             travel_time = h_dist / avg_speed
             idle_time = travel_time * traffic_factor
             h = (h_dist / mileage) + (idle_time * idle_rate)

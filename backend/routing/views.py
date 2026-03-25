@@ -81,7 +81,7 @@ class OptimizeRouteAPIView(APIView):
         # ------------------------------
         # 🔥 Step 4: Compute routes
         # ------------------------------
-        fuel_cost, fuel_dist, fuel_time, fuel_path = fuel_optimized_path(G, source, target, vehicle)
+        fuel_cost,cost_pkr, fuel_dist, fuel_time, fuel_path = fuel_optimized_path(G, source, target, vehicle)
         short_dist, short_time, short_path = shortest_path(G, source, target)
         short_fuel_cost = compute_path_fuel(G, short_path, vehicle)
 
@@ -108,18 +108,21 @@ class OptimizeRouteAPIView(APIView):
         return Response({
             "fuel_optimized": {
                 "fuel_cost": round(fuel_cost, 3),
+                "cost_pkr_fuel": round(cost_pkr, 2),
                 "distance_km": round(fuel_dist, 2),
                 "time_min": round(fuel_time, 2),
                 "route": fuel_coords,
             },
             "shortest": {
                 "fuel_cost": round(short_fuel_cost, 3),
+                "cost_pkr_short": round(short_fuel_cost * vehicle.get("fuel_price", 280), 2),
                 "distance_km": round(short_dist, 2),
                 "time_min": round(short_time, 2),
                 "route": short_coords,
             },
             "comparison": {
                 "fuel_saved": round(short_fuel_cost - fuel_cost, 3),
+                "cost_saved_pkr": round((short_fuel_cost - fuel_cost) * vehicle.get("fuel_price", 280), 2),
                 "time_diff": round(short_time - fuel_time, 2),
                 "distance_diff": round(short_dist - fuel_dist, 2)
             },
