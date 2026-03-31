@@ -1,0 +1,100 @@
+.results-section { display: flex; flex-direction: column; gap: 9px; animation: fadeUp .3s ease forwards; }
+
+/* ── Winner banner ── */
+.winner-banner {
+  display:       flex;
+  align-items:   center;
+  gap:           9px;
+  padding:       10px 14px;
+  border-radius: 12px;
+  background:    linear-gradient(135deg, rgba(168,255,62,.1), rgba(168,255,62,.04));
+  border:        1px solid rgba(168,255,62,.22);
+  font-size:     12px;
+  font-weight:   500;
+}
+.winner-icon       { font-size: 15px; }
+.winner-text strong { color: var(--lime); }
+.winner-tradeoff    { color: var(--orange); }
+
+/* ── Route cards ── */
+.route-cards { display: flex; flex-direction: column; gap: 7px; }
+
+.route-card {
+  border-radius: 12px;
+  padding:       13px 14px;
+  border:        1.5px solid transparent;
+  cursor:        pointer;
+  transition:    all .2s;
+  position:      relative;
+  overflow:      hidden;
+  outline:       none;
+}
+.route-card::before {
+  content:       '';
+  position:      absolute;
+  top:0; left:0; right:0;
+  height:        2px;
+  border-radius: 2px 2px 0 0;
+}
+.route-card:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+
+/* Fuel card */
+.route-card.fuel              { background: linear-gradient(145deg,rgba(168,255,62,.06),rgba(168,255,62,.02)); border-color: rgba(168,255,62,.2); }
+.route-card.fuel::before      { background: var(--lime); }
+.route-card.fuel.active       { border-color: rgba(168,255,62,.5); box-shadow: 0 0 20px rgba(168,255,62,.1); }
+
+/* Shortest card */
+.route-card.shortest          { background: linear-gradient(145deg,rgba(91,168,255,.06),rgba(91,168,255,.02)); border-color: rgba(91,168,255,.2); }
+.route-card.shortest::before  { background: var(--blue); }
+.route-card.shortest.active   { border-color: rgba(91,168,255,.5); box-shadow: 0 0 20px rgba(91,168,255,.1); }
+
+.rc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.rc-label  { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-family: var(--fm); }
+.route-card.fuel     .rc-label { color: var(--lime); }
+.route-card.shortest .rc-label { color: var(--blue); }
+
+.rc-badge  { font-size: 9px; font-family: var(--fm); padding: 3px 8px; border-radius: 6px; }
+.route-card.fuel     .rc-badge { background: rgba(168,255,62,.1); color: var(--lime); }
+.route-card.shortest .rc-badge { background: rgba(91,168,255,.1); color: var(--blue); }
+
+.rc-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+.rc-metric  { text-align: center; }
+.rc-value   { display: block; font-family: var(--fm); font-size: 17px; font-weight: 700; line-height: 1; }
+.rc-unit    { display: block; font-size: 8.5px; color: var(--mu); font-family: var(--fm); letter-spacing: .06em; text-transform: uppercase; margin-top: 2px; }
+.route-card.fuel     .rc-value { color: var(--lime); }
+.route-card.shortest .rc-value { color: var(--blue); }
+
+/* ── Delta row ── */
+.delta-row {
+  display:       grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:           6px;
+  padding:       10px 12px;
+  background:    var(--g);
+  border:        1px solid var(--b);
+  border-radius: 10px;
+}
+.delta        { text-align: center; }
+.delta-value  { display: block; font-family: var(--fm); font-size: 12px; font-weight: 700; }
+.delta-value.positive { color: var(--lime); }
+.delta-value.negative { color: var(--orange); }
+.delta-unit   { display: block; font-size: 8px; color: var(--mu); font-family: var(--fm); text-transform: uppercase; letter-spacing: .07em; margin-top: 2px; }
+
+/* ── PKR cards ── */
+.pkr-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pkr-card  {
+  padding:       10px 12px;
+  border-radius: 10px;
+  display:       flex;
+  flex-direction: column;
+  gap:           2px;
+}
+.pkr-card.fuel     { background: rgba(168,255,62,.06); border: 1px solid rgba(168,255,62,.15); }
+.pkr-card.shortest { background: rgba(91,168,255,.06); border: 1px solid rgba(91,168,255,.15); }
+.pkr-label { font-size: 9px; font-family: var(--fm); color: var(--mu); text-transform: uppercase; letter-spacing: .07em; }
+.pkr-value { font-family: var(--fm); font-size: 16px; font-weight: 700; }
+.pkr-card.fuel     .pkr-value { color: var(--lime); }
+.pkr-card.shortest .pkr-value { color: var(--blue); }
+
+/* ── Hint ── */
+.results-hint { font-size: 9px; color: var(--mu); font-family: var(--fm); text-align: center; }

@@ -1,0 +1,123 @@
+/* ── Location section ── */
+.location-section { display: flex; flex-direction: column; }
+.location-stack   { display: flex; flex-direction: column; gap: 6px; }
+
+/* ── Location card ── */
+.loc-card {
+  background:    var(--g);
+  border:        1px solid var(--b);
+  border-radius: 12px;
+  overflow:      hidden;
+  transition:    border-color .2s, box-shadow .2s;
+}
+.loc-card:focus-within { border-color: rgba(168,255,62,0.3); }
+.loc-card.selecting {
+  border-color: var(--lime);
+  box-shadow:   0 0 0 3px rgba(168,255,62,0.07);
+  animation:    locPulse 1.2s ease-in-out infinite;
+}
+@keyframes locPulse {
+  0%,100% { box-shadow: 0 0 0 3px rgba(168,255,62,0.07); }
+  50%     { box-shadow: 0 0 0 7px rgba(168,255,62,0.02); }
+}
+
+.loc-row     { display: flex; align-items: center; }
+.loc-marker  { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+.pin         { width: 9px; height: 9px; }
+.pin-src     { border-radius: 50%; background: var(--lime);   box-shadow: 0 0 0 3px rgba(168,255,62,0.18); }
+.pin-dst     { border-radius: 2px; background: var(--orange); box-shadow: 0 0 0 3px rgba(255,137,64,0.18); }
+
+.loc-input {
+  flex:       1;
+  background: transparent;
+  border:     none;
+  outline:    none;
+  font-family: var(--ff);
+  font-size:  12.5px;
+  color:      var(--txt);
+  padding:    10px 6px 10px 2px;
+}
+.loc-input::placeholder { color: var(--mu); }
+.loc-input:disabled     { opacity: .5; }
+
+.loc-actions { display: flex; border-left: 1px solid var(--b); }
+.loc-action-btn {
+  background:  transparent;
+  border:      none;
+  cursor:      pointer;
+  color:       var(--mu);
+  padding:     0 10px;
+  height:      38px;
+  display:     flex;
+  align-items: center;
+  transition:  color .2s;
+}
+.loc-action-btn:hover       { color: var(--lime); }
+.loc-action-btn + .loc-action-btn { border-left: 1px solid var(--b); }
+
+.coord-tag {
+  font-family: var(--fm);
+  font-size:   8.5px;
+  color:       var(--mu2);
+  padding:     3px 10px 7px 38px;
+}
+
+.loc-connector {
+  height:      1px;
+  background:  var(--b);
+  margin-left: 20px;
+}
+
+/* ── Vehicle section ── */
+.vehicle-section { display: flex; flex-direction: column; }
+
+.preset-grid {
+  display:               grid;
+  grid-template-columns: repeat(4,1fr);
+  gap:                   6px;
+  margin-bottom:         12px;
+}
+.preset-btn {
+  background:    var(--g);
+  border:        1px solid var(--b);
+  border-radius: 10px;
+  padding:       9px 4px;
+  cursor:        pointer;
+  text-align:    center;
+  transition:    all .2s;
+  font-family:   var(--ff);
+  color:         var(--mu);
+}
+.preset-btn:hover  { border-color: var(--bh); color: var(--txt); }
+.preset-btn.active { border-color: rgba(168,255,62,0.4); background: rgba(168,255,62,0.07); color: var(--lime); }
+.preset-icon  { font-size: 16px; display: block; margin-bottom: 3px; }
+.preset-name  { font-size: 9px; font-weight: 700; display: block; }
+
+.sliders-stack { display: flex; flex-direction: column; gap: 13px; }
+
+/* ── Slider ── */
+.slider-row    { display: flex; flex-direction: column; gap: 5px; }
+.slider-header { display: flex; justify-content: space-between; align-items: center; }
+.slider-label  { font-size: 11px; font-weight: 500; color: var(--txt); }
+.slider-value  { font-family: var(--fm); font-size: 11px; color: var(--lime); font-weight: 700; }
+.slider-unit   { font-size: 8px; color: var(--mu); margin-left: 2px; }
+
+input[type='range'] {
+  -webkit-appearance: none;
+  width:         100%;
+  height:        3px;
+  border-radius: 2px;
+  outline:       none;
+  cursor:        pointer;
+  margin-top:    2px;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width:         13px;
+  height:        13px;
+  border-radius: 50%;
+  background:    var(--lime);
+  cursor:        pointer;
+  box-shadow:    0 0 8px rgba(168,255,62,0.5);
+}
