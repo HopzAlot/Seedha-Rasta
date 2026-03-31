@@ -123,3 +123,10 @@ body {
   .panel           { width: 100%; height: 55vh; border-bottom: 1px solid var(--b); }
   #map-wrap        { height: 45vh; }
 }
+.map-shell {
+  flex:     1;
+  position: relative;
+  display:  flex;
+  flex-direction: column;
+  overflow: hidden;
+}

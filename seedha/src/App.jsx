@@ -14,7 +14,6 @@ export default function App() {
         <HeroCanvas />
 
         <div className="panel-body">
-
           <LocationInputs
             sourceText={routing.sourceText}
             destText={routing.destText}
@@ -65,14 +64,6 @@ export default function App() {
               'Find Routes →'
             )}
           </button>
-
-          {routing.routeData && (
-            <Results
-              data={routing.routeData}
-              activeMode={routing.activeMode}
-              onModeChange={routing.setActiveMode}
-            />
-          )}
         </div>
 
         <footer className="panel-footer">
@@ -88,16 +79,29 @@ export default function App() {
         </footer>
       </aside>
 
-      <MapView
-        source={routing.source}
-        dest={routing.dest}
-        fuelRoute={routing.routeData?.fuel_optimized?.route ?? null}
-        shortRoute={routing.routeData?.shortest?.route ?? null}
-        activeMode={routing.activeMode}
-        selectingFor={routing.selectingFor}
-        hasResults={!!routing.routeData}
-        onMapClick={routing.handleMapClick}
-      />
+      {/* ── Map + bottom results overlay ── */}
+      <div className="map-shell">
+        <MapView
+          source={routing.source}
+          dest={routing.dest}
+          fuelRoute={routing.routeData?.fuel_optimized?.route ?? null}
+          shortRoute={routing.routeData?.shortest?.route ?? null}
+          activeMode={routing.activeMode}
+          selectingFor={routing.selectingFor}
+          hasResults={!!routing.routeData}
+          onMapClick={routing.handleMapClick}
+        />
+
+        {/* Bottom results drawer */}
+        {routing.routeData && (
+          <Results
+            data={routing.routeData}
+            activeMode={routing.activeMode}
+            onModeChange={routing.setActiveMode}
+            onClose={() => routing.setRouteData(null)}
+          />
+        )}
+      </div>
     </div>
   )
 }
