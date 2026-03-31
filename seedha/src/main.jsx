@@ -6,6 +6,7 @@ import './styles/panel.css'
 import './styles/inputs.css'
 import './styles/map.css'
 import './styles/results.css'
+import './styles/navigation.css'   // ← add this
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

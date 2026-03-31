@@ -21,52 +21,101 @@
   50%     { box-shadow: 0 0 0 7px rgba(168,255,62,0.02); }
 }
 
-.loc-row     { display: flex; align-items: center; }
-.loc-marker  { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.loc-row {
+  display:   flex;
+  align-items: center;
+  width:     100%;
+  overflow:  hidden;       /* ← prevent row itself from overflowing */
+}
+
+.loc-marker {
+  width:       34px;       /* ← slightly tighter */
+  height:      36px;
+  display:     flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;          /* ← never shrink the dot */
+}
 
 .pin         { width: 9px; height: 9px; }
 .pin-src     { border-radius: 50%; background: var(--lime);   box-shadow: 0 0 0 3px rgba(168,255,62,0.18); }
 .pin-dst     { border-radius: 2px; background: var(--orange); box-shadow: 0 0 0 3px rgba(255,137,64,0.18); }
 
 .loc-input {
-  flex:       1;
-  background: transparent;
-  border:     none;
-  outline:    none;
+  flex:        1;
+  min-width:   0;          /* ← KEY: allows input to shrink below content size */
+  background:  transparent;
+  border:      none;
+  outline:     none;
   font-family: var(--ff);
-  font-size:  12.5px;
-  color:      var(--txt);
-  padding:    10px 6px 10px 2px;
+  font-size:   12px;       /* ← slightly smaller so text fits */
+  color:       var(--txt);
+  padding:     9px 4px 9px 2px;
+  overflow:    hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .loc-input::placeholder { color: var(--mu); }
 .loc-input:disabled     { opacity: .5; }
 
-.loc-actions { display: flex; border-left: 1px solid var(--b); }
+/* ── Action buttons container ── */
+.loc-actions {
+  display:     flex;
+  align-items: stretch;
+  border-left: 1px solid var(--b);
+  flex-shrink: 0;          /* ← never shrink the button group */
+}
+
 .loc-action-btn {
   background:  transparent;
   border:      none;
   cursor:      pointer;
   color:       var(--mu);
-  padding:     0 10px;
-  height:      38px;
+  width:       30px;       /* ← fixed width instead of padding */
+  height:      36px;
   display:     flex;
   align-items: center;
-  transition:  color .2s;
+  justify-content: center;
+  flex-shrink: 0;
+  transition:  color .2s, background .2s;
 }
-.loc-action-btn:hover       { color: var(--lime); }
-.loc-action-btn + .loc-action-btn { border-left: 1px solid var(--b); }
+.loc-action-btn:hover:not(:disabled) {
+  color:       var(--lime);
+  background:  rgba(168,255,62,0.05);
+}
+.loc-action-btn + .loc-action-btn {
+  border-left: 1px solid var(--b);
+}
 
 .coord-tag {
   font-family: var(--fm);
   font-size:   8.5px;
   color:       var(--mu2);
-  padding:     3px 10px 7px 38px;
+  padding:     3px 10px 7px 34px;
 }
 
 .loc-connector {
   height:      1px;
   background:  var(--b);
   margin-left: 20px;
+}
+
+/* ── GPS button specific ── */
+.gps-btn:hover:not(:disabled) {
+  color:       var(--blue) !important;
+  background:  rgba(91,168,255,0.06) !important;
+}
+.gps-btn.locating {
+  color:       var(--blue);
+  opacity:     0.8;
+}
+.gps-btn:disabled {
+  opacity:     0.4;
+  cursor:      not-allowed;
+}
+@keyframes gpsSpin {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
 }
 
 /* ── Vehicle section ── */
@@ -90,7 +139,11 @@
   color:         var(--mu);
 }
 .preset-btn:hover  { border-color: var(--bh); color: var(--txt); }
-.preset-btn.active { border-color: rgba(168,255,62,0.4); background: rgba(168,255,62,0.07); color: var(--lime); }
+.preset-btn.active {
+  border-color: rgba(168,255,62,0.4);
+  background:   rgba(168,255,62,0.07);
+  color:        var(--lime);
+}
 .preset-icon  { font-size: 16px; display: block; margin-bottom: 3px; }
 .preset-name  { font-size: 9px; font-weight: 700; display: block; }
 
@@ -120,4 +173,26 @@ input[type='range']::-webkit-slider-thumb {
   background:    var(--lime);
   cursor:        pointer;
   box-shadow:    0 0 8px rgba(168,255,62,0.5);
+}
+/* GPS button */
+.gps-btn {
+  color: var(--mu);
+  transition: color .2s;
+}
+.gps-btn:hover:not(:disabled) {
+  color: var(--blue);
+}
+.gps-btn.locating {
+  color: var(--blue);
+  opacity: 0.8;
+}
+.gps-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* GPS spin animation */
+@keyframes gpsSpin {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
 }

@@ -1,0 +1,183 @@
+/* ── Nav bar shared ── */
+.nav-bar {
+  position:        absolute;
+  top:             0;
+  left:            0;
+  right:           0;
+  z-index:         800;
+  background:      rgba(9,11,20,0.96);
+  backdrop-filter: blur(20px);
+  border-bottom:   1px solid var(--b);
+  animation:       navSlideDown .28s cubic-bezier(0.32,0.72,0,1) forwards;
+}
+
+@keyframes navSlideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+/* ── Idle state ── */
+.nav-bar.idle { padding: 12px 16px; }
+
+.nav-idle-inner {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             12px;
+}
+.nav-idle-left {
+  display:     flex;
+  align-items: center;
+  gap:         12px;
+}
+.nav-idle-icon  { font-size: 22px; }
+.nav-idle-title {
+  font-size:   14px;
+  font-weight: 700;
+  color:       var(--txt);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.nav-idle-sub {
+  font-size:   11px;
+  color:       var(--mu);
+  font-family: var(--fm);
+}
+
+/* Start button */
+.nav-start-btn {
+  padding:       10px 22px;
+  border:        none;
+  border-radius: 10px;
+  font-family:   var(--ff);
+  font-size:     13px;
+  font-weight:   800;
+  color:         #050710;
+  cursor:        pointer;
+  transition:    all .18s;
+  white-space:   nowrap;
+  flex-shrink:   0;
+}
+.nav-start-btn:hover {
+  transform:  translateY(-1px);
+  box-shadow: 0 6px 20px rgba(168,255,62,0.3);
+}
+
+/* Stop button */
+.nav-stop-btn {
+  padding:       8px 14px;
+  border:        1px solid var(--b);
+  border-radius: 9px;
+  background:    rgba(255,255,255,0.04);
+  color:         var(--mu);
+  font-family:   var(--ff);
+  font-size:     12px;
+  font-weight:   600;
+  cursor:        pointer;
+  transition:    all .18s;
+  flex-shrink:   0;
+}
+.nav-stop-btn:hover { color: var(--txt); border-color: var(--bh); }
+
+/* Error */
+.nav-error {
+  margin-top:  8px;
+  font-size:   11px;
+  font-family: var(--fm);
+  color:       var(--red);
+  padding:     6px 10px;
+  background:  rgba(255,69,69,0.07);
+  border:      1px solid rgba(255,69,69,0.2);
+  border-radius: 8px;
+}
+
+/* ── Active navigation ── */
+.nav-bar.active { padding: 0; }
+
+.nav-current {
+  display:     flex;
+  align-items: center;
+  gap:         12px;
+  padding:     12px 16px 10px;
+}
+
+.nav-arrow {
+  font-size:   28px;
+  line-height: 1;
+  flex-shrink: 0;
+  width:       36px;
+  text-align:  center;
+}
+
+.nav-instruction-text { flex: 1; min-width: 0; }
+
+.nav-instr-main {
+  font-size:     15px;
+  font-weight:   700;
+  color:         var(--txt);
+  line-height:   1.2;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+.nav-instr-next {
+  font-size:   10.5px;
+  color:       var(--mu);
+  font-family: var(--fm);
+  margin-top:  3px;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-remaining {
+  text-align:  right;
+  flex-shrink: 0;
+}
+.nav-rem-dist {
+  font-family: var(--fm);
+  font-size:   14px;
+  font-weight: 700;
+  color:       var(--txt);
+  line-height: 1;
+}
+.nav-rem-time {
+  font-family: var(--fm);
+  font-size:   10px;
+  color:       var(--mu);
+  margin-top:  3px;
+}
+
+/* Progress bar */
+.nav-progress-track {
+  height:     3px;
+  background: var(--b);
+}
+.nav-progress-fill {
+  height:     100%;
+  border-radius: 0 2px 2px 0;
+  transition: width .5s ease;
+  min-width:  2%;
+}
+
+/* ── Arrived ── */
+.nav-bar.arrived { padding: 14px 16px; }
+
+.nav-arrived-inner {
+  display:     flex;
+  align-items: center;
+  gap:         12px;
+}
+.nav-arrived-icon  { font-size: 26px; }
+.nav-arrived-title {
+  font-size:   15px;
+  font-weight: 800;
+  color:       var(--lime);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.nav-arrived-sub {
+  font-size:   11px;
+  color:       var(--mu);
+  font-family: var(--fm);
+}

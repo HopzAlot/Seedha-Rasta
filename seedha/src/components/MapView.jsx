@@ -12,6 +12,31 @@ function makeIcon(emoji) {
   })
 }
 
+function makeUserIcon() {
+  return L.divIcon({
+    html: `
+      <div style="position:relative;width:20px;height:20px">
+        <div style="
+          position:absolute;inset:0;border-radius:50%;
+          background:rgba(91,168,255,0.25);
+          animation:userPing 1.5s ease-out infinite;
+        "></div>
+        <div style="
+          position:absolute;top:50%;left:50%;
+          transform:translate(-50%,-50%);
+          width:12px;height:12px;border-radius:50%;
+          background:#5ba8ff;
+          border:2px solid white;
+          box-shadow:0 0 8px rgba(91,168,255,0.8);
+        "></div>
+      </div>
+    `,
+    className:  '',
+    iconSize:   [20, 20],
+    iconAnchor: [10, 10],
+  })
+}
+
 export default function MapView({
   source, dest,
   fuelRoute, shortRoute,
@@ -19,25 +44,21 @@ export default function MapView({
   selectingFor,
   hasResults,
   onMapClick,
+  userPosition,   // { lat, lng } from useNavigation
+  navActive,      // bool
 }) {
-  const mapRef    = useRef(null)
-  const srcMRef   = useRef(null)
-  const dstMRef   = useRef(null)
-  const fuelLRef  = useRef(null)
-  const shortLRef = useRef(null)
+  const mapRef     = useRef(null)
+  const srcMRef    = useRef(null)
+  const dstMRef    = useRef(null)
+  const fuelLRef   = useRef(null)
+  const shortLRef  = useRef(null)
+  const userMRef   = useRef(null)  // user position marker
 
-  // ── Keep a ref to the latest onMapClick so the Leaflet
-  //    listener never has a stale closure ──────────────────
-  const onMapClickRef = useRef(onMapClick)
-  useEffect(() => {
-    onMapClickRef.current = onMapClick
-  }, [onMapClick])
-
-  // ── Keep a ref to selectingFor for the same reason ──────
+  const onMapClickRef  = useRef(onMapClick)
   const selectingForRef = useRef(selectingFor)
-  useEffect(() => {
-    selectingForRef.current = selectingFor
-  }, [selectingFor])
+
+  useEffect(() => { onMapClickRef.current  = onMapClick  }, [onMapClick])
+  useEffect(() => { selectingForRef.current = selectingFor }, [selectingFor])
 
   /* ── Init map ONCE ── */
   useEffect(() => {
@@ -56,7 +77,6 @@ export default function MapView({
 
     L.control.zoom({ position: 'bottomright' }).addTo(map)
 
-    // Always reads latest values through refs — no stale closure
     map.on('click', (e) => {
       if (!selectingForRef.current) return
       onMapClickRef.current(e.latlng.lat, e.latlng.lng)
@@ -64,26 +84,20 @@ export default function MapView({
 
     map.on('mousemove', (e) => {
       const el = document.getElementById('coord-display')
-      if (el) {
-        el.textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`
-      }
+      if (el) el.textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`
     })
 
     mapRef.current = map
-  }, []) // empty deps — runs once only
+  }, [])
 
   /* ── Source marker ── */
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
-    srcMRef.current?.remove()
-    srcMRef.current = null
+    srcMRef.current?.remove(); srcMRef.current = null
     if (source) {
       srcMRef.current = L
-        .marker([source.lat, source.lng], {
-          icon: makeIcon('🟢'),
-          zIndexOffset: 1000,
-        })
+        .marker([source.lat, source.lng], { icon: makeIcon('🟢'), zIndexOffset: 1000 })
         .addTo(map)
         .bindTooltip('Start', { direction: 'top' })
     }
@@ -93,28 +107,44 @@ export default function MapView({
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
-    dstMRef.current?.remove()
-    dstMRef.current = null
+    dstMRef.current?.remove(); dstMRef.current = null
     if (dest) {
       dstMRef.current = L
-        .marker([dest.lat, dest.lng], {
-          icon: makeIcon('🔴'),
-          zIndexOffset: 1000,
-        })
+        .marker([dest.lat, dest.lng], { icon: makeIcon('🔴'), zIndexOffset: 1000 })
         .addTo(map)
         .bindTooltip('Destination', { direction: 'top' })
     }
   }, [dest])
+
+  /* ── User position marker (navigation) ── */
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    if (!userPosition || !navActive) {
+      userMRef.current?.remove(); userMRef.current = null
+      return
+    }
+    if (!userMRef.current) {
+      userMRef.current = L
+        .marker([userPosition.lat, userPosition.lng], {
+          icon: makeUserIcon(),
+          zIndexOffset: 2000,
+        })
+        .addTo(map)
+    } else {
+      userMRef.current.setLatLng([userPosition.lat, userPosition.lng])
+    }
+    // Pan map to follow user
+    map.panTo([userPosition.lat, userPosition.lng], { animate: true, duration: 0.5 })
+  }, [userPosition, navActive])
 
   /* ── Draw both routes ── */
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
 
-    fuelLRef.current?.remove()
-    shortLRef.current?.remove()
-    fuelLRef.current  = null
-    shortLRef.current = null
+    fuelLRef.current?.remove();  fuelLRef.current  = null
+    shortLRef.current?.remove(); shortLRef.current = null
 
     const fuelActive  = activeMode === 'fuel'
     const shortActive = activeMode === 'shortest'
@@ -127,8 +157,7 @@ export default function MapView({
           weight:    shortActive ? 6 : 3,
           opacity:   shortActive ? 0.95 : 0.4,
           dashArray: shortActive ? null : '8 6',
-          lineJoin:  'round',
-          lineCap:   'round',
+          lineJoin:  'round', lineCap: 'round',
         }
       ).addTo(map)
     }
@@ -141,8 +170,7 @@ export default function MapView({
           weight:    fuelActive ? 6 : 3,
           opacity:   fuelActive ? 0.95 : 0.4,
           dashArray: fuelActive ? null : '8 6',
-          lineJoin:  'round',
-          lineCap:   'round',
+          lineJoin:  'round', lineCap: 'round',
         }
       ).addTo(map)
 
@@ -150,7 +178,7 @@ export default function MapView({
     }
   }, [fuelRoute, shortRoute, activeMode])
 
-  /* ── Cursor style when selecting ── */
+  /* ── Cursor ── */
   useEffect(() => {
     const container = mapRef.current?.getContainer()
     if (!container) return
@@ -164,33 +192,31 @@ export default function MapView({
     <div id="map-wrap">
       <div id="leaflet-map" />
 
-      {/* Coordinate HUD */}
+      {/* Add pulsing animation for user dot */}
+      <style>{`
+        @keyframes userPing {
+          0%   { transform: scale(1);   opacity: 0.6; }
+          100% { transform: scale(2.5); opacity: 0;   }
+        }
+      `}</style>
+
       <div className="map-hud coords">
         <span id="coord-display">Hover map…</span>
       </div>
 
-      {/* Active mode badge */}
-      {hasResults && (
-        <div
-          className="map-hud mode-badge"
-          style={{ borderColor: `${modeColor}33` }}
-        >
+      {hasResults && !navActive && (
+        <div className="map-hud mode-badge" style={{ borderColor: `${modeColor}33` }}>
           <div className="mode-pulse" style={{ background: modeColor }} />
           <span style={{ color: modeColor }}>{modeLabel} highlighted</span>
         </div>
       )}
 
-      {/* Click-to-select hint */}
       {selectingFor && (
         <div className="map-hud hint">
-          Click to set{' '}
-          <strong>
-            {selectingFor === 'source' ? 'start' : 'destination'}
-          </strong>
+          Click to set <strong>{selectingFor === 'source' ? 'start' : 'destination'}</strong>
         </div>
       )}
 
-      {/* Route legend */}
       {hasResults && (
         <div className="map-hud legend">
           <div className="legend-row">
@@ -198,12 +224,15 @@ export default function MapView({
             <span>Fuel-Optimized</span>
           </div>
           <div className="legend-row">
-            <div
-              className="legend-line"
-              style={{ background: '#5ba8ff', opacity: 0.7 }}
-            />
+            <div className="legend-line" style={{ background: '#5ba8ff', opacity: 0.7 }} />
             <span>Shortest</span>
           </div>
+          {navActive && (
+            <div className="legend-row">
+              <div className="legend-line" style={{ background: '#5ba8ff', borderRadius: '50%', width: 10, height: 10 }} />
+              <span>Your position</span>
+            </div>
+          )}
         </div>
       )}
     </div>
