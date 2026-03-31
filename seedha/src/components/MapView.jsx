@@ -90,32 +90,55 @@ export default function MapView({
     mapRef.current = map
   }, [])
 
-  /* ── Source marker ── */
-  useEffect(() => {
-    const map = mapRef.current
-    if (!map) return
-    srcMRef.current?.remove(); srcMRef.current = null
-    if (source) {
-      srcMRef.current = L
-        .marker([source.lat, source.lng], { icon: makeIcon('🟢'), zIndexOffset: 1000 })
-        .addTo(map)
-        .bindTooltip('Start', { direction: 'top' })
-    }
-  }, [source])
+ /* ── Source marker — zoom in when set ── */
+useEffect(() => {
+  const map = mapRef.current
+  if (!map) return
+  srcMRef.current?.remove()
+  srcMRef.current = null
+  if (source) {
+    srcMRef.current = L
+      .marker([source.lat, source.lng], {
+        icon: makeIcon('🟢'),
+        zIndexOffset: 1000,
+      })
+      .addTo(map)
+      .bindTooltip('Start', { direction: 'top' })
 
-  /* ── Destination marker ── */
-  useEffect(() => {
-    const map = mapRef.current
-    if (!map) return
-    dstMRef.current?.remove(); dstMRef.current = null
-    if (dest) {
-      dstMRef.current = L
-        .marker([dest.lat, dest.lng], { icon: makeIcon('🔴'), zIndexOffset: 1000 })
-        .addTo(map)
-        .bindTooltip('Destination', { direction: 'top' })
+    // If dest already set, fit both — otherwise zoom to source
+    if (dstMRef.current) {
+      const group = L.featureGroup([srcMRef.current, dstMRef.current])
+      map.fitBounds(group.getBounds(), { padding: [80, 80], animate: true })
+    } else {
+      map.flyTo([source.lat, source.lng], 15, { animate: true, duration: 1 })
     }
-  }, [dest])
+  }
+}, [source])
 
+/* ── Destination marker — fit both points when set ── */
+useEffect(() => {
+  const map = mapRef.current
+  if (!map) return
+  dstMRef.current?.remove()
+  dstMRef.current = null
+  if (dest) {
+    dstMRef.current = L
+      .marker([dest.lat, dest.lng], {
+        icon: makeIcon('🔴'),
+        zIndexOffset: 1000,
+      })
+      .addTo(map)
+      .bindTooltip('Destination', { direction: 'top' })
+
+    // Always fit both markers when destination is set
+    if (srcMRef.current) {
+      const group = L.featureGroup([srcMRef.current, dstMRef.current])
+      map.fitBounds(group.getBounds(), { padding: [80, 80], animate: true })
+    } else {
+      map.flyTo([dest.lat, dest.lng], 15, { animate: true, duration: 1 })
+    }
+  }
+}, [dest])
   /* ── User position marker (navigation) ── */
   useEffect(() => {
     const map = mapRef.current

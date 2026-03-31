@@ -1,4 +1,4 @@
-/* ── Map shell (wraps map + drawer) ── */
+/* ── Map shell ── */
 .map-shell {
   flex:     1;
   position: relative;
@@ -9,17 +9,17 @@
 
 /* ── Results drawer ── */
 .results-drawer {
-  position:   absolute;
-  bottom:     0;
-  left:       0;
-  right:      0;
-  z-index:    700;
-  background: rgba(9,11,20,0.96);
+  position:        absolute;
+  bottom:          0;
+  left:            0;
+  right:           0;
+  z-index:         700;
+  background:      rgba(9,11,20,0.96);
   backdrop-filter: blur(20px);
-  border-top: 1px solid var(--b);
-  border-radius: 18px 18px 0 0;
-  animation:  drawerUp .32s cubic-bezier(0.32,0.72,0,1) forwards;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-top:      1px solid var(--b);
+  border-radius:   18px 18px 0 0;
+  animation:       drawerUp .32s cubic-bezier(0.32,0.72,0,1) forwards;
+  transition:      transform .3s cubic-bezier(0.32,0.72,0,1);
 }
 
 @keyframes drawerUp {
@@ -27,28 +27,60 @@
   to   { transform: translateY(0);    opacity: 1; }
 }
 
-/* ── Drag handle ── */
+/* Collapsed — only handle visible */
+.results-drawer.collapsed .drawer-collapsible {
+  display: none;
+}
+
+/* ── Handle ── */
 .drawer-handle {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             4px;
+  padding:         8px 16px 6px;
+  cursor:          pointer;
+  user-select:     none;
+}
+.drawer-handle:hover .drawer-handle-bar {
+  background: var(--bh);
+}
+.drawer-handle-bar {
   width:         40px;
   height:        4px;
   border-radius: 2px;
   background:    var(--b);
-  margin:        10px auto 0;
+  transition:    background .18s;
+}
+.drawer-handle-hint {
+  font-size:      9px;
+  font-family:    var(--fm);
+  color:          var(--mu);
+  letter-spacing: .06em;
+  transition:     color .18s;
+}
+.drawer-handle:hover .drawer-handle-hint {
+  color: var(--txt);
+}
+
+/* Collapsible content */
+.drawer-collapsible {
+  overflow: hidden;
 }
 
 /* ── Top row ── */
 .drawer-toprow {
   display:     flex;
   align-items: center;
-  padding:     10px 16px 0;
+  padding:     0 16px 8px;
   gap:         10px;
 }
 
 /* ── Route tabs ── */
 .route-tabs {
-  display: flex;
-  gap:     4px;
-  flex:    1;
+  display:       flex;
+  gap:           4px;
+  flex:          1;
   background:    rgba(255,255,255,0.03);
   border:        1px solid var(--b);
   border-radius: 9px;
@@ -109,11 +141,11 @@
 
 /* ── Drawer body ── */
 .drawer-body {
-  display:        flex;
-  align-items:    flex-start;
-  gap:            12px;
-  padding:        12px 16px 16px;
-  overflow-x:     auto;
+  display:     flex;
+  align-items: flex-start;
+  gap:         10px;
+  padding:     0 16px 16px;
+  overflow-x:  auto;
 }
 .drawer-body::-webkit-scrollbar { display: none; }
 
@@ -127,9 +159,8 @@
   padding:       10px 8px;
   gap:           0;
   flex-shrink:   0;
-  min-width:     220px;
+  min-width:     200px;
 }
-
 .res-stat {
   flex:           1;
   display:        flex;
@@ -137,13 +168,12 @@
   align-items:    center;
   gap:            2px;
   text-align:     center;
-  min-width:      0;        /* ← allow shrinking */
+  min-width:      0;
   padding:        0 2px;
 }
-
 .res-stat-value {
   font-family:   var(--fm);
-  font-size:     14px;      /* ← was 18px */
+  font-size:     12px;
   font-weight:   700;
   line-height:   1;
   white-space:   nowrap;
@@ -152,32 +182,30 @@
   width:         100%;
   text-align:    center;
 }
-
 .res-stat-unit {
   font-family:    var(--fm);
-  font-size:      7px;      /* ← was 8px */
+  font-size:      7px;
   color:          var(--mu);
   text-transform: uppercase;
   letter-spacing: .05em;
 }
-
 .res-stat-label {
-  font-size:  8px;          /* ← was 9px */
-  color:      var(--mu);
-  margin-top: 1px;
-  white-space: nowrap;
-  overflow:   hidden;
+  font-size:     8px;
+  color:         var(--mu);
+  margin-top:    1px;
+  white-space:   nowrap;
+  overflow:      hidden;
   text-overflow: ellipsis;
-  width:      100%;
-  text-align: center;
+  width:         100%;
+  text-align:    center;
 }
-
 .res-divider {
   width:       1px;
-  height:      28px;        /* ← was 36px */
+  height:      28px;
   background:  var(--b);
   flex-shrink: 0;
 }
+
 /* ── Comparison block ── */
 .cmp-block {
   flex-shrink:   0;
@@ -193,7 +221,7 @@
   background:            rgba(255,255,255,0.025);
   border-bottom:         1px solid var(--b);
 }
-.cmp-h-field { font-size: 0; }   /* empty */
+.cmp-h-field { font-size: 0; }
 .cmp-h-col {
   text-align:     center;
   font-family:    var(--fm);
@@ -220,19 +248,16 @@
   color:       var(--mu);
 }
 .cmp-cell {
-  display:        flex;
-  align-items:    center;
+  display:         flex;
+  align-items:     center;
   justify-content: center;
-  gap:            4px;
-  font-family:    var(--fm);
-  font-size:      11px;
-  color:          var(--mu);
-  text-align:     center;
+  gap:             4px;
+  font-family:     var(--fm);
+  font-size:       11px;
+  color:           var(--mu);
+  text-align:      center;
 }
-.cmp-cell.win {
-  color:       var(--txt);
-  font-weight: 700;
-}
+.cmp-cell.win { color: var(--txt); font-weight: 700; }
 .cmp-win-dot {
   width:         5px;
   height:        5px;
