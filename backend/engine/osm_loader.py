@@ -1,3 +1,5 @@
+import os
+
 import osmnx as ox
 import pickle
 import redis
@@ -10,7 +12,7 @@ from shapely.geometry import LineString
 
 from .utils import get_speed, haversine_km
 
-r = redis.Redis(host='localhost', port=6379, db=0)
+r = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'), port=6379, db=0)
 
 # ------------------------------
 # 🔐 Preprocess Signature
