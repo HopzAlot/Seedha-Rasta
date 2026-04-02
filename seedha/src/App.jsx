@@ -79,14 +79,30 @@ export default function App() {
           </button>
         </div>
 
-        <footer className="panel-footer">
-          <span>Seedha Rasta · v2.0</span>
-          <div className="api-pill">
-            <div className={`api-dot${routing.apiOnline === false ? ' offline' : ''}`} />
-            {routing.apiOnline === null ? 'Connecting…'
-              : routing.apiOnline ? 'API Live' : 'API Offline'}
-          </div>
-        </footer>
+<footer className="panel-footer">
+  <span>Seedha Rasta · v2.0</span>
+
+  {/* Live OGRA petrol price */}
+  <span style={{
+    fontFamily: 'var(--fm)',
+    fontSize:   '8.5px',
+    color:      routing.fuelPriceLoading ? 'var(--mu)' : 'var(--orange)',
+    display:    'flex',
+    alignItems: 'center',
+    gap:        '4px',
+  }}>
+    ⛽
+    {routing.fuelPriceLoading
+      ? 'fetching price…'
+      : `₨${routing.fuelPrice.toFixed(2)}/L`}
+  </span>
+
+  <div className="api-pill">
+    <div className={`api-dot${routing.apiOnline === false ? ' offline' : ''}`} />
+    {routing.apiOnline === null ? 'Connecting…'
+      : routing.apiOnline ? 'API Live' : 'API Offline'}
+  </div>
+</footer>
       </aside>
 
       <div className="map-shell">

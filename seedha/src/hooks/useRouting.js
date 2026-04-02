@@ -5,6 +5,7 @@ import {
   reverseGeocode,
   checkApiHealth,
 } from '../api/routeApi'
+import { getPakistanPetrolPrice } from '../api/fuelGetPrice'
 
 export function useRouting() {
   const [sourceText,   setSourceText]   = useState('')
@@ -19,14 +20,27 @@ export function useRouting() {
   const [activeMode,   setActiveMode]   = useState('fuel')
   const [loading,      setLoading]      = useState(false)
   const [geocoding,    setGeocoding]    = useState(null)
-  const [locating,     setLocating]     = useState(null) // 'source' | 'dest' | null
+  const [locating,     setLocating]     = useState(null)
   const [error,        setError]        = useState(null)
   const [apiOnline,    setApiOnline]    = useState(null)
+  const [fuelPrice,    setFuelPrice]    = useState(255.63)
+  const [fuelPriceLoading, setFuelPriceLoading] = useState(true)
 
   const selectingForRef = useRef(selectingFor)
   useEffect(() => { selectingForRef.current = selectingFor }, [selectingFor])
 
+  // ── API health check ──────────────────────────────────
   useEffect(() => { checkApiHealth().then(setApiOnline) }, [])
+
+  // ── Fetch live OGRA petrol price on mount ─────────────
+  useEffect(() => {
+    setFuelPriceLoading(true)
+    getPakistanPetrolPrice()
+      .then(price => {
+        if (price) setFuelPrice(price)
+      })
+      .finally(() => setFuelPriceLoading(false))
+  }, [])
 
   // ── Text geocoding ────────────────────────────────────
   const geocodeSrc = useCallback(async () => {
@@ -53,12 +67,10 @@ export function useRouting() {
 
   // ── Live GPS location ─────────────────────────────────
   const fetchLiveLocation = useCallback((target) => {
-    // target = 'source' | 'destination'
     if (!navigator.geolocation) {
       setError('Geolocation is not supported by your browser.')
       return
     }
-
     setLocating(target)
     setError(null)
 
@@ -68,21 +80,16 @@ export function useRouting() {
         try {
           const label = await reverseGeocode(lat, lng)
           if (target === 'source') {
-            setSource({ lat, lng })
-            setSourceText(label)
+            setSource({ lat, lng }); setSourceText(label)
           } else {
-            setDest({ lat, lng })
-            setDestText(label)
+            setDest({ lat, lng }); setDestText(label)
           }
         } catch {
-          // Even if reverse geocode fails, still set the coordinates
           const fallback = `${lat.toFixed(5)}, ${lng.toFixed(5)}`
           if (target === 'source') {
-            setSource({ lat, lng })
-            setSourceText(fallback)
+            setSource({ lat, lng }); setSourceText(fallback)
           } else {
-            setDest({ lat, lng })
-            setDestText(fallback)
+            setDest({ lat, lng }); setDestText(fallback)
           }
         } finally {
           setLocating(null)
@@ -104,11 +111,7 @@ export function useRouting() {
             setError('Could not get your location.')
         }
       },
-      {
-        enableHighAccuracy: true,
-        timeout:            10000,
-        maximumAge:         30000,
-      }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
     )
   }, [])
 
@@ -146,29 +149,42 @@ export function useRouting() {
       const data = await fetchBothRoutes({
         source,
         destination: dest,
-        vehicle: { mileage, idle_consumption: idleRate },
+        vehicle:    { mileage, idle_consumption: idleRate },
+        fuel_price: fuelPrice,    // ← live OGRA price sent to backend
       })
       setRouteData(data)
       setActiveMode('fuel')
     } catch (e) { setError(e.message) }
     finally { setLoading(false) }
-  }, [source, dest, mileage, idleRate])
+  }, [source, dest, mileage, idleRate, fuelPrice])
 
   return {
+    // Location
     sourceText, setSourceText,
     destText,   setDestText,
     source,     dest,
     selectingFor, setSelectingFor,
     geocodeSrc, geocodeDst,
-    fetchLiveLocation,    // ← new
-    locating,             // ← new — which field is currently locating
-    handleMapClick, geocoding,
+    fetchLiveLocation,
+    locating,
+    handleMapClick,
+    geocoding,
+
+    // Vehicle
     presetId,
     mileage,  setMileage,
     idleRate, setIdleRate,
     applyPreset,
+
+    // Results
     routeData, setRouteData,
     activeMode, setActiveMode,
+
+    // Fuel price
+    fuelPrice,
+    fuelPriceLoading,
+
+    // UI
     loading, error, apiOnline,
     canSubmit: !!source && !!dest && !loading,
     submitRoute,

@@ -168,12 +168,18 @@ export default function Results({ data, activeMode, onModeChange, onClose }) {
                 highlight={sh.distance_km < fo.distance_km}
               />
               <span className="cmp-saved">
-                {(cmp?.distance_diff ?? 0) !== 0
-                  ? <span className={cmp.distance_diff < 0 ? 'saved-pos' : 'saved-neg'}>
-                      {cmp.distance_diff > 0 ? '+' : ''}
-                      {fmt(cmp.distance_diff, 2)}km
-                    </span>
-                  : <span className="saved-neu">—</span>}
+                {/* Logic: If fo is larger than sh, the difference is an "increase" (+) 
+                  from the shortest path perspective.
+                */}
+                {cmp.distance_diff !== 0 ? (
+                  <span className={cmp.distance_diff < 0 ? 'saved-neg' : 'saved-pos'}>
+                    {/* Force it to show + if the fuel route is longer than shortest */}
+                    {cmp.distance_diff > 0 ? '−' : '+'}
+                    {fmt(Math.abs(cmp.distance_diff), 2)}km
+                  </span>
+                ) : (
+                  <span className="saved-neu">—</span>
+                )}
               </span>
             </div>
 

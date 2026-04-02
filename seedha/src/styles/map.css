@@ -88,3 +88,28 @@
   color:       var(--mu);
 }
 .legend-line  { width: 22px; height: 3px; border-radius: 2px; }
+/* ── Re-center button ── */
+.recenter-btn {
+  position:        absolute;
+  bottom:          80px;        /* above zoom controls */
+  right:           14px;
+  z-index:         600;
+  width:           36px;
+  height:          36px;
+  border-radius:   10px;
+  border:          1px solid var(--b);
+  background:      rgba(9,11,20,0.88);
+  backdrop-filter: blur(12px);
+  color:           var(--txt);
+  cursor:          pointer;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  transition:      all .18s;
+}
+.recenter-btn:hover {
+  color:         var(--lime);
+  border-color:  rgba(168,255,62,0.35);
+  background:    rgba(168,255,62,0.08);
+  transform:     scale(1.05);
+}

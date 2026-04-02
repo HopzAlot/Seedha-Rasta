@@ -44,102 +44,98 @@ export default function MapView({
   selectingFor,
   hasResults,
   onMapClick,
-  userPosition,   // { lat, lng } from useNavigation
-  navActive,      // bool
+  userPosition,
+  navActive,
 }) {
-  const mapRef     = useRef(null)
-  const srcMRef    = useRef(null)
-  const dstMRef    = useRef(null)
-  const fuelLRef   = useRef(null)
-  const shortLRef  = useRef(null)
-  const userMRef   = useRef(null)  // user position marker
+  const mapRef      = useRef(null)
+  const srcMRef     = useRef(null)
+  const dstMRef     = useRef(null)
+  const fuelLRef    = useRef(null)
+  const shortLRef   = useRef(null)
+  const userMRef    = useRef(null)
+  const boundsRef   = useRef(null)   // ← stores current src+dst bounds
 
-  const onMapClickRef  = useRef(onMapClick)
+  const onMapClickRef   = useRef(onMapClick)
   const selectingForRef = useRef(selectingFor)
-
-  useEffect(() => { onMapClickRef.current  = onMapClick  }, [onMapClick])
+  useEffect(() => { onMapClickRef.current   = onMapClick   }, [onMapClick])
   useEffect(() => { selectingForRef.current = selectingFor }, [selectingFor])
 
   /* ── Init map ONCE ── */
   useEffect(() => {
     if (mapRef.current) return
-
     const map = L.map('leaflet-map', {
       center:      LAHORE_CENTER,
       zoom:        13,
       zoomControl: false,
     })
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
-      maxZoom:     19,
+      maxZoom: 19,
     }).addTo(map)
-
     L.control.zoom({ position: 'bottomright' }).addTo(map)
-
     map.on('click', (e) => {
       if (!selectingForRef.current) return
       onMapClickRef.current(e.latlng.lat, e.latlng.lng)
     })
-
     map.on('mousemove', (e) => {
       const el = document.getElementById('coord-display')
       if (el) el.textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`
     })
-
     mapRef.current = map
   }, [])
 
- /* ── Source marker — zoom in when set ── */
-useEffect(() => {
-  const map = mapRef.current
-  if (!map) return
-  srcMRef.current?.remove()
-  srcMRef.current = null
-  if (source) {
-    srcMRef.current = L
-      .marker([source.lat, source.lng], {
-        icon: makeIcon('🟢'),
-        zIndexOffset: 1000,
-      })
-      .addTo(map)
-      .bindTooltip('Start', { direction: 'top' })
-
-    // If dest already set, fit both — otherwise zoom to source
-    if (dstMRef.current) {
-      const group = L.featureGroup([srcMRef.current, dstMRef.current])
-      map.fitBounds(group.getBounds(), { padding: [80, 80], animate: true })
-    } else {
-      map.flyTo([source.lat, source.lng], 15, { animate: true, duration: 1 })
+  /* ── Helper: update boundsRef and optionally fit ── */
+  function refitBounds(srcMarker, dstMarker, fit = true) {
+    const map = mapRef.current
+    if (!map) return
+    if (srcMarker && dstMarker) {
+      const bounds = L.featureGroup([srcMarker, dstMarker]).getBounds()
+      boundsRef.current = bounds
+      if (fit) map.fitBounds(bounds, { padding: [80, 80], animate: true })
     }
   }
-}, [source])
 
-/* ── Destination marker — fit both points when set ── */
-useEffect(() => {
-  const map = mapRef.current
-  if (!map) return
-  dstMRef.current?.remove()
-  dstMRef.current = null
-  if (dest) {
-    dstMRef.current = L
-      .marker([dest.lat, dest.lng], {
-        icon: makeIcon('🔴'),
-        zIndexOffset: 1000,
-      })
-      .addTo(map)
-      .bindTooltip('Destination', { direction: 'top' })
+  /* ── Source marker ── */
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    srcMRef.current?.remove(); srcMRef.current = null
+    if (source) {
+      srcMRef.current = L
+        .marker([source.lat, source.lng], { icon: makeIcon('🟢'), zIndexOffset: 1000 })
+        .addTo(map)
+        .bindTooltip('Start', { direction: 'top' })
 
-    // Always fit both markers when destination is set
-    if (srcMRef.current) {
-      const group = L.featureGroup([srcMRef.current, dstMRef.current])
-      map.fitBounds(group.getBounds(), { padding: [80, 80], animate: true })
-    } else {
-      map.flyTo([dest.lat, dest.lng], 15, { animate: true, duration: 1 })
+      if (dstMRef.current) {
+        refitBounds(srcMRef.current, dstMRef.current)
+      } else {
+        map.flyTo([source.lat, source.lng], 15, { animate: true, duration: 1 })
+        boundsRef.current = null
+      }
     }
-  }
-}, [dest])
-  /* ── User position marker (navigation) ── */
+  }, [source])
+
+  /* ── Destination marker ── */
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    dstMRef.current?.remove(); dstMRef.current = null
+    if (dest) {
+      dstMRef.current = L
+        .marker([dest.lat, dest.lng], { icon: makeIcon('🟠'), zIndexOffset: 1000 })
+        .addTo(map)
+        .bindTooltip('Destination', { direction: 'top' })
+
+      if (srcMRef.current) {
+        refitBounds(srcMRef.current, dstMRef.current)
+      } else {
+        map.flyTo([dest.lat, dest.lng], 15, { animate: true, duration: 1 })
+        boundsRef.current = null
+      }
+    }
+  }, [dest])
+
+  /* ── User position marker ── */
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
@@ -150,14 +146,12 @@ useEffect(() => {
     if (!userMRef.current) {
       userMRef.current = L
         .marker([userPosition.lat, userPosition.lng], {
-          icon: makeUserIcon(),
-          zIndexOffset: 2000,
+          icon: makeUserIcon(), zIndexOffset: 2000,
         })
         .addTo(map)
     } else {
       userMRef.current.setLatLng([userPosition.lat, userPosition.lng])
     }
-    // Pan map to follow user
     map.panTo([userPosition.lat, userPosition.lng], { animate: true, duration: 0.5 })
   }, [userPosition, navActive])
 
@@ -165,7 +159,6 @@ useEffect(() => {
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
-
     fuelLRef.current?.remove();  fuelLRef.current  = null
     shortLRef.current?.remove(); shortLRef.current = null
 
@@ -176,11 +169,10 @@ useEffect(() => {
       shortLRef.current = L.polyline(
         shortRoute.map(p => [p.lat, p.lng]),
         {
-          color:     '#5ba8ff',
-          weight:    shortActive ? 6 : 3,
-          opacity:   shortActive ? 0.95 : 0.4,
+          color: '#5ba8ff', weight: shortActive ? 6 : 3,
+          opacity: shortActive ? 0.95 : 0.4,
           dashArray: shortActive ? null : '8 6',
-          lineJoin:  'round', lineCap: 'round',
+          lineJoin: 'round', lineCap: 'round',
         }
       ).addTo(map)
     }
@@ -189,15 +181,17 @@ useEffect(() => {
       fuelLRef.current = L.polyline(
         fuelRoute.map(p => [p.lat, p.lng]),
         {
-          color:     '#a8ff3e',
-          weight:    fuelActive ? 6 : 3,
-          opacity:   fuelActive ? 0.95 : 0.4,
+          color: '#a8ff3e', weight: fuelActive ? 6 : 3,
+          opacity: fuelActive ? 0.95 : 0.4,
           dashArray: fuelActive ? null : '8 6',
-          lineJoin:  'round', lineCap: 'round',
+          lineJoin: 'round', lineCap: 'round',
         }
       ).addTo(map)
 
-      map.fitBounds(fuelLRef.current.getBounds(), { padding: [60, 60] })
+      // Update bounds to full route extent
+      const routeBounds = fuelLRef.current.getBounds()
+      boundsRef.current = routeBounds
+      map.fitBounds(routeBounds, { padding: [60, 60] })
     }
   }, [fuelRoute, shortRoute, activeMode])
 
@@ -208,14 +202,25 @@ useEffect(() => {
     container.style.cursor = selectingFor ? 'crosshair' : ''
   }, [selectingFor])
 
+  /* ── Re-center handler ── */
+  function handleReCenter() {
+    const map = mapRef.current
+    if (!map) return
+    if (boundsRef.current) {
+      map.fitBounds(boundsRef.current, { padding: [80, 80], animate: true })
+    } else if (source) {
+      map.flyTo([source.lat, source.lng], 15, { animate: true, duration: 1 })
+    }
+  }
+
   const modeColor = activeMode === 'fuel' ? '#a8ff3e' : '#5ba8ff'
   const modeLabel = activeMode === 'fuel' ? '⛽ Fuel-Optimized' : '📍 Shortest Route'
+  const hasPoints = source || dest
 
   return (
     <div id="map-wrap">
       <div id="leaflet-map" />
 
-      {/* Add pulsing animation for user dot */}
       <style>{`
         @keyframes userPing {
           0%   { transform: scale(1);   opacity: 0.6; }
@@ -223,10 +228,12 @@ useEffect(() => {
         }
       `}</style>
 
+      {/* Coord HUD */}
       <div className="map-hud coords">
         <span id="coord-display">Hover map…</span>
       </div>
 
+      {/* Mode badge */}
       {hasResults && !navActive && (
         <div className="map-hud mode-badge" style={{ borderColor: `${modeColor}33` }}>
           <div className="mode-pulse" style={{ background: modeColor }} />
@@ -234,12 +241,33 @@ useEffect(() => {
         </div>
       )}
 
+      {/* Click hint */}
       {selectingFor && (
         <div className="map-hud hint">
-          Click to set <strong>{selectingFor === 'source' ? 'start' : 'destination'}</strong>
+          Click to set <strong>
+            {selectingFor === 'source' ? 'start' : 'destination'}
+          </strong>
         </div>
       )}
 
+      {/* ── Re-center button ── */}
+      {hasPoints && (
+        <button
+          className="recenter-btn"
+          onClick={handleReCenter}
+          title="Re-center map"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="3"   stroke="currentColor" strokeWidth="1.6"/>
+            <line x1="8" y1="1"  x2="8"  y2="4"  stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            <line x1="8" y1="12" x2="8"  y2="15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            <line x1="1" y1="8"  x2="4"  y2="8"  stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            <line x1="12" y1="8" x2="15" y2="8"  stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+          </svg>
+        </button>
+      )}
+
+      {/* Legend */}
       {hasResults && (
         <div className="map-hud legend">
           <div className="legend-row">
