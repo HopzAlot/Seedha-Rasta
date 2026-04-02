@@ -1,6 +1,68 @@
 from django.db import models
 
 
+
+class History(models.Model):
+    # ------------------------------
+    # 📍 Route Input
+    # ------------------------------
+    start_lat = models.FloatField()
+    start_lng = models.FloatField()
+    end_lat = models.FloatField()
+    end_lng = models.FloatField()
+    city = models.CharField(max_length=100, default="Lahore, Pakistan")
+
+    # ------------------------------
+    # 🚗 Vehicle Snapshot (important!)
+    # ------------------------------
+    mileage = models.FloatField(help_text="km per liter")
+    idle_consumption = models.FloatField(help_text="liters per hour")
+    fuel_price = models.FloatField(default=280)
+
+    # ------------------------------
+    # 🛣️ Route Outputs (compressed JSON)
+    # ------------------------------
+    fuel_route = models.JSONField()      # list of coords
+    shortest_route = models.JSONField()
+
+    # ------------------------------
+    # 📊 Metrics (Fuel Optimized)
+    # ------------------------------
+    fuel_cost = models.FloatField()
+    fuel_distance = models.FloatField()
+    fuel_time = models.FloatField()
+    fuel_cost_pkr = models.FloatField()
+
+    # ------------------------------
+    # 📊 Metrics (Shortest)
+    # ------------------------------
+    shortest_fuel_cost = models.FloatField()
+    shortest_distance = models.FloatField()
+    shortest_time = models.FloatField()
+    shortest_cost_pkr = models.FloatField()
+
+    # ------------------------------
+    # ⚖️ Comparison Metrics
+    # ------------------------------
+    fuel_saved = models.FloatField()
+    cost_saved = models.FloatField()
+    time_saved = models.FloatField()
+    distance_saved = models.FloatField()
+
+    # ------------------------------
+    # ⚙️ Metadata
+    # ------------------------------
+    cache_status = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # ------------------------------
+    # 🔮 Future-ready (optional)
+    # ------------------------------
+    # user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.city} | Saved {self.fuel_saved:.2f}L"
+    
 class VehicleProfile(models.Model):
 
     class VehicleType(models.TextChoices):

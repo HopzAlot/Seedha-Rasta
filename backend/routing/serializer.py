@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import VehicleProfile
+from .models import History, VehicleProfile
 
 class VehicleProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,3 +12,8 @@ class OptimizeRouteSerializer(serializers.Serializer):
     vehicle_id = serializers.IntegerField(required=False)
     mileage = serializers.FloatField(required=False)
     idle_consumption = serializers.FloatField(required=False)
+
+class HistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model=History
+        fields='__all__'
