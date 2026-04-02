@@ -50,7 +50,7 @@ class OptimizeRouteAPIView(APIView):
                 vehicle = {
                     "mileage": vehicle_obj.mileage,
                     "idle_consumption": vehicle_obj.idle_consumption,
-                    "fuel_price": getattr(vehicle_obj, "fuel_price", 280),
+                    "fuel_price": getattr(vehicle_obj, "fuel_price", 458),
                 }
             except VehicleProfile.DoesNotExist:
                 return Response({"error": "Vehicle not found"}, status=404)
@@ -58,7 +58,7 @@ class OptimizeRouteAPIView(APIView):
             vehicle = {
                 "mileage": data.get("mileage", 15),
                 "idle_consumption": data.get("idle_consumption", 0.8),
-                "fuel_price": data.get("fuel_price", 280),
+                "fuel_price": data.get("fuel_price", 458),
             }
 
         lat_start, lng_start = float(start["lat"]), float(start["lng"])
