@@ -33,14 +33,17 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://seedha-frontend:5173",
-    "http://seedha-rasta-frontend.onrender.com"
+    "http://seedha-rasta-frontend.onrender.com",
+    "http://seedha-rasta.onrender.com",
+    
 ]
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://seedha-frontend:5173",
-    "http://seedha-rasta-frontend.onrender.com"
+    "http://seedha-rasta-frontend.onrender.com",
+    "http://seedha-rasta.onrender.com",
 ]
 CSRF_COOKIE_SAMESITE = 'None'
 
