@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://seedha-backend:8000',
+        target: 'https://seedha-raasta-backend.onrender.com',
         changeOrigin: true,
       },
     },
