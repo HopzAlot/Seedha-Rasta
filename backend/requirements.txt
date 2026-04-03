@@ -1,6 +1,7 @@
-setuptools
-wheel
+setuptools>=68.0.0
+wheel>=0.43.0
 pip>=24.0
+
 asgiref==3.8.1
 certifi==2024.2.2
 charset-normalizer==3.3.2
@@ -8,9 +9,9 @@ charset-normalizer==3.3.2
 Django==5.0.4
 djangorestframework==3.15.1
 
-# Geospatial stack (compatible versions)
+# Geospatial stack
 geopandas==1.0.1
-shapely==2.0.4
+shapely==2.0.6
 pyproj==3.6.1
 pyogrio==0.7.2
 osmnx==2.1.0
@@ -47,4 +48,4 @@ django-celery-beat==2.6.0
 # Server
 gunicorn==21.2.0
 whitenoise==6.7.0
-django-cors-headers==3.13.0
+django-cors-headers==4.3.1
