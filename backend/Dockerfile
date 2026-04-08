@@ -40,12 +40,11 @@ ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=backend.settings
 
 # Install the runtime versions of the geo-libraries
-# Using -dev here is a "safety first" approach for Debian Bookworm compatibility
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev \
-    libgeos-dev \
-    libproj-dev \
-    libgdal-dev \
+    libpq5 \
+    libgeos-c1v5 \
+    libproj25 \
+    gdal-bin \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the compiled site-packages from the builder

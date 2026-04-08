@@ -40,7 +40,7 @@ services:
     build: ./seedha
     container_name: seedha-frontend
     ports:
-      - "5173:5173"
+      - "80:80"
     depends_on:
       - backend
     volumes:
