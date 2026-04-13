@@ -58,9 +58,10 @@ EXPOSE 8000
 # Copy the script from your local folder into the container root
 COPY entrypoint.sh /app/entrypoint.sh
 
-# Give it execution permissions
+# Give it execution permissions and ensure LF line endings
 RUN sed -i 's/\r$//' /app/entrypoint.sh && \
-    chmod +x /app/entrypoint.sh
+    chmod +x /app/entrypoint.sh && \
+    dos2unix /app/entrypoint.sh 2>/dev/null || true
 
-# Set it as the default entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Set it as the default entrypoint (shell form for better compatibility)
+ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]

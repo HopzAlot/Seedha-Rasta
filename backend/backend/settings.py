@@ -27,21 +27,20 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG') == 'true'
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get("ALLOWED_HOSTS", "").split(",") if host]
 
-CORS_ORIGIN_ALLOW_ALL = True
-# Use the actual URL/Port where your Vite frontend is running
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:80",
-    "http://127.0.0.1:5173",
-    "http://seedha-frontend:5173" 
-]
-CORS_ALLOW_ALL_ORIGINS = False
+# Trust X-Forwarded-* headers from load balancer (ALB)
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PROTO = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:80",
-    "http://seedha-frontend:5173"
-]
+
+# Parse CORS and CSRF origins from environment variables
+_cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+_csrf_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins if origin.strip()]
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_origins if origin.strip()]
 CSRF_COOKIE_SAMESITE = 'None'
 
 SESSION_COOKIE_SAMESITE = 'None'

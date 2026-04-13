@@ -12,7 +12,16 @@ from shapely.geometry import LineString
 
 from .utils import get_speed, haversine_km
 
-r = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'), port=6379, db=0)
+redis_host = os.getenv('REDIS_HOST', 'localhost')
+redis_port = int(os.getenv('REDIS_PORT', 6379))
+print(f"[osm_loader] Connecting to Redis at {redis_host}:{redis_port}")
+try:
+    r = redis.Redis(host=redis_host, port=redis_port, db=0, socket_connect_timeout=2, socket_timeout=2)
+    r.ping()  # Test connection
+    print("[osm_loader] ✅ Redis connected successfully")
+except Exception as e:
+    print(f"[osm_loader] ❌ Redis connection failed: {type(e).__name__}: {e}")
+    r = None  # Disable caching if Redis unavailable
 
 # ------------------------------
 # 🔐 Preprocess Signature
@@ -99,9 +108,15 @@ def load_graph(start: dict, end: dict):
         cache_key = get_corridor_cache_key(start, end, width)
 
         # ------------------------------
-        # 🔁 Cache
+        # 🔁 Cache (with error handling)
         # ------------------------------
-        cached = r.get(cache_key)
+        cached = None
+        if r:
+            try:
+                cached = r.get(cache_key)
+            except Exception as e:
+                print(f"[osm_loader] Redis GET failed: {e}")
+        
         if cached:
             print(f"[osm_loader] Cache hit (width={width})")
             G = pickle.loads(cached)
@@ -137,14 +152,20 @@ def load_graph(start: dict, end: dict):
             continue
 
         # ------------------------------
-        # Process + Cache
+        # Process + Cache (with error handling)
         # ------------------------------
         G = normalize_graph_nodes(G)
         G = preprocess_graph(G)
         print("after preprocess")
 
-        r.set(cache_key, pickle.dumps(G))
-        print(f"[osm_loader] Cached graph (width={width})")
+        if r:
+            try:
+                r.set(cache_key, pickle.dumps(G))
+                print(f"[osm_loader] Cached graph (width={width})")
+            except Exception as e:
+                print(f"[osm_loader] Redis SET failed: {e}")
+        else:
+            print(f"[osm_loader] Redis unavailable, skipping cache (width={width})")
 
         return G
 
