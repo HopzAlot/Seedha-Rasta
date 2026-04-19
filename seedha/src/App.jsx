@@ -16,7 +16,12 @@ export default function App() {
       ? (routing.routeData?.fuel_optimized?.route ?? null)
       : (routing.routeData?.shortest?.route ?? null)
 
-  const nav = useNavigation(activeRoute)
+  const activeRouteSummary =
+    routing.activeMode === 'fuel'
+      ? routing.routeData?.fuel_optimized ?? null
+      : routing.routeData?.shortest ?? null
+
+  const nav = useNavigation(activeRoute, activeRouteSummary)
 
   return (
     <div className="shell">

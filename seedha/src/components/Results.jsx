@@ -116,7 +116,7 @@ export default function Results({ data, activeMode, onModeChange, onClose }) {
             />
             <div className="res-divider" />
             <Stat
-              label="Fuel cost"
+              label="Fuel expense"
               value={
                 isFuel
                   ? (fo.cost_pkr_fuel  != null
@@ -222,6 +222,27 @@ export default function Results({ data, activeMode, onModeChange, onClose }) {
                   ? <span className="saved-pos">
                       −<Rs>{Math.round(pkrSaved)}</Rs>
                     </span>
+                  : <span className="saved-neu">—</span>}
+              </span>
+            </div>
+
+            <div className="cmp-data-row">
+              <span className="cmp-field-lbl">Ride fare est.</span>
+              <CmpCell
+                value={fo.est_fare_pkr != null
+                  ? <Rs>{Math.round(fo.est_fare_pkr)}</Rs>
+                  : '—'}
+                highlight={(fo.est_fare_pkr ?? Infinity) <= (sh.est_fare_pkr ?? Infinity)}
+              />
+              <CmpCell
+                value={sh.est_fare_pkr != null
+                  ? <Rs>{Math.round(sh.est_fare_pkr)}</Rs>
+                  : '—'}
+                highlight={(sh.est_fare_pkr ?? Infinity) < (fo.est_fare_pkr ?? Infinity)}
+              />
+              <span className="cmp-saved">
+                {(cmp.fare_saved_pkr ?? 0) > 0
+                  ? <span className="saved-pos">−<Rs>{Math.round(cmp.fare_saved_pkr)}</Rs></span>
                   : <span className="saved-neu">—</span>}
               </span>
             </div>

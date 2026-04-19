@@ -12,6 +12,7 @@ class OptimizeRouteSerializer(serializers.Serializer):
     vehicle_id = serializers.IntegerField(required=False)
     mileage = serializers.FloatField(required=False)
     idle_consumption = serializers.FloatField(required=False)
+    fuel_price = serializers.FloatField(required=False)
 
 class HistorySerializer(serializers.ModelSerializer):
     class Meta:

@@ -6,21 +6,20 @@ const client = axios.create({
   timeout: 500000,
 })
 
-export async function fetchBothRoutes({ source, destination, vehicle }) {
+export async function fetchBothRoutes({ source, destination, vehicle, fuel_price }) {
   try {
     const { data } = await client.post('/route/optimize/', {
-      start: {              // ← was "source"
+      start: {
         lat: source.lat,
         lng: source.lng,
       },
-      end: {                // ← was "destination"
+      end: {
         lat: destination.lat,
         lng: destination.lng,
       },
-      vehicle: {
-        mileage:          vehicle.mileage,
-        idle_consumption: vehicle.idle_consumption,
-      },
+      mileage: vehicle.mileage,
+      idle_consumption: vehicle.idle_consumption,
+      fuel_price,
     })
     return data
   } catch (err) {

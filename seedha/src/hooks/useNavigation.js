@@ -108,7 +108,7 @@ function remainingDist(route, fromIndex) {
   return total
 }
 
-export function useNavigation(route) {
+export function useNavigation(route, routeSummary = null) {
   const [active,       setActive]       = useState(false)
   const [position,     setPosition]     = useState(null)   // { lat, lng, heading }
   const [nearestIdx,   setNearestIdx]   = useState(0)
@@ -120,14 +120,30 @@ export function useNavigation(route) {
   const [error,        setError]        = useState(null)
 
   const watchRef = useRef(null)
+  const totalRouteMRef = useRef(0)
+  const totalRouteMinRef = useRef(0)
 
   // Build instructions whenever route changes
   useEffect(() => {
     if (!route?.length) return
+    const routeM = routeLength(route)
+    const summaryM = Number.isFinite(routeSummary?.distance_km)
+      ? routeSummary.distance_km * 1000
+      : null
+    const summaryMin = Number.isFinite(routeSummary?.time_min)
+      ? routeSummary.time_min
+      : null
+
+    const totalM = summaryM ?? routeM
+    const totalMin = summaryMin ?? (totalM / 1000 / 40 * 60)
+
+    totalRouteMRef.current = totalM
+    totalRouteMinRef.current = totalMin
+
     setInstructions(buildInstructions(route))
-    setRemainingM(routeLength(route))
-    setRemainingMin(routeLength(route) / 1000 / 40 * 60) // assume 40 km/h avg
-  }, [route])
+    setRemainingM(totalM)
+    setRemainingMin(totalMin)
+  }, [route, routeSummary])
 
   const start = useCallback(() => {
     if (!route?.length) return
@@ -155,8 +171,10 @@ export function useNavigation(route) {
 
         // Remaining distance & time
         const rem = remainingDist(route, idx)
+        const totalM = totalRouteMRef.current || 1
+        const ratio = Math.max(0, Math.min(1, rem / totalM))
         setRemainingM(rem)
-        setRemainingMin(rem / 1000 / 40 * 60)
+        setRemainingMin(totalRouteMinRef.current * ratio)
 
         // Check arrival (within 30m of destination)
         const destDist = haversine(userPos, route[route.length - 1])

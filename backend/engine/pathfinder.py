@@ -3,6 +3,14 @@ from .cost_function import compute_edge_cost
 from .utils import haversine_distance
 import networkx as nx
 
+
+def _edge_time_with_traffic(edge):
+    base_time_min = edge.get("travel_time", 0)
+    traffic = edge.get("traffic_level", 0)
+    # Soft multiplier for simulated traffic, calibrated to avoid overly pessimistic ETAs.
+    traffic_multiplier = 1 + (0.35 * traffic)
+    return base_time_min * traffic_multiplier
+
 # ------------------------------
 # Fuel-Optimized Path (A* search)
 # ------------------------------
@@ -26,7 +34,7 @@ def fuel_optimized_path(G, source, target, vehicle):
                 path.append(curr)
                 curr = parent[curr]
             path.reverse()
-            fuel_price = vehicle.get("fuel_price", 280)
+            fuel_price = vehicle.get("fuel_price", 336.58)
             cost_pkr = fuel_cost * fuel_price
             return fuel_cost, cost_pkr, dist, time_min, path
 
@@ -38,8 +46,7 @@ def fuel_optimized_path(G, source, target, vehicle):
             best_edge = min(edges.values(), key=lambda e: compute_edge_cost(e, vehicle))
             edge_cost = compute_edge_cost(best_edge, vehicle)
             length_km = best_edge.get('length', 1) / 1000
-            traffic = best_edge.get("traffic_level", 0)
-            edge_time = best_edge["travel_time"] * (1 + traffic)
+            edge_time = _edge_time_with_traffic(best_edge)
 
             new_cost = fuel_cost + edge_cost
             new_dist = dist + length_km
@@ -93,8 +100,7 @@ def shortest_path(G, source, target):
                 continue
             best_edge = min(edges.values(), key=lambda e: e.get('length', 1))
             length_km = best_edge.get('length', 1) / 1000
-            traffic = best_edge.get("traffic_level", 0)
-            edge_time = best_edge["travel_time"] * (1 + traffic)
+            edge_time = _edge_time_with_traffic(best_edge)
 
             new_dist = dist + length_km
             new_time = time_min + edge_time

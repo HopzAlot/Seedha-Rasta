@@ -11,10 +11,13 @@ from engine.osm_loader import load_graph
 from engine.node_mapper import get_nearest_node
 from engine.traffic_model import assign_traffic
 from engine.pathfinder import fuel_optimized_path, shortest_path
-from engine.utils import nodes_to_coordinates, compute_path_fuel
+from engine.utils import nodes_to_coordinates, compute_path_fuel,estimate_ride_fare
+from .fuel_price import get_petrol_super_price
 
 import copy
 import time
+
+
 
 
 # ------------------------------
@@ -43,6 +46,9 @@ class OptimizeRouteAPIView(APIView):
         # 🚗 Vehicle Handling
         # ------------------------------
         vehicle_id = data.get("vehicle_id")
+        resolved_fuel_price = data.get("fuel_price")
+        if resolved_fuel_price is None:
+            resolved_fuel_price = get_petrol_super_price().get("price", 366)
 
         if vehicle_id:
             try:
@@ -50,7 +56,7 @@ class OptimizeRouteAPIView(APIView):
                 vehicle = {
                     "mileage": vehicle_obj.mileage,
                     "idle_consumption": vehicle_obj.idle_consumption,
-                    "fuel_price": getattr(vehicle_obj, "fuel_price", 458),
+                    "fuel_price": resolved_fuel_price,
                 }
             except VehicleProfile.DoesNotExist:
                 return Response({"error": "Vehicle not found"}, status=404)
@@ -58,7 +64,7 @@ class OptimizeRouteAPIView(APIView):
             vehicle = {
                 "mileage": data.get("mileage", 15),
                 "idle_consumption": data.get("idle_consumption", 0.8),
-                "fuel_price": data.get("fuel_price", 458),
+                "fuel_price": resolved_fuel_price,
             }
 
         lat_start, lng_start = float(start["lat"]), float(start["lng"])
@@ -111,6 +117,8 @@ class OptimizeRouteAPIView(APIView):
         cost_saved = round(fuel_saved * fuel_price, 2)
         time_saved = round(short_time - fuel_time, 2)
         distance_saved = round(short_dist - fuel_dist, 2)
+        fuel_route_fare = estimate_ride_fare(fuel_dist, fuel_time)
+        shortest_route_fare = estimate_ride_fare(short_dist, short_time)
 
         # ------------------------------
         # 🧾 Cache Metadata
@@ -167,6 +175,7 @@ class OptimizeRouteAPIView(APIView):
             "fuel_optimized": {
                 "fuel_cost": round(fuel_cost, 3),
                 "cost_pkr_fuel": round(cost_pkr, 2),
+                "est_fare_pkr": fuel_route_fare,
                 "distance_km": round(fuel_dist, 2),
                 "time_min": round(fuel_time, 2),
                 "route": fuel_coords,
@@ -174,6 +183,7 @@ class OptimizeRouteAPIView(APIView):
             "shortest": {
                 "fuel_cost": round(short_fuel_cost, 3),
                 "cost_pkr_short": round(short_fuel_cost * fuel_price, 2),
+                "est_fare_pkr": shortest_route_fare,
                 "distance_km": round(short_dist, 2),
                 "time_min": round(short_time, 2),
                 "route": short_coords,
@@ -181,6 +191,7 @@ class OptimizeRouteAPIView(APIView):
             "comparison": {
                 "fuel_saved": fuel_saved,
                 "cost_saved_pkr": cost_saved,
+                "fare_saved_pkr": round(shortest_route_fare - fuel_route_fare, 2),
                 "time_diff": time_saved,
                 "distance_diff": distance_saved,
             },
@@ -188,6 +199,18 @@ class OptimizeRouteAPIView(APIView):
         }
 
         return Response(response, status=status.HTTP_200_OK)
+
+
+class FuelPriceAPIView(APIView):
+    def get(self, request):
+        force_refresh = str(request.query_params.get("refresh", "")).lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+        payload = get_petrol_super_price(force_refresh=force_refresh)
+        return Response(payload, status=status.HTTP_200_OK)
     
 class HistoryAPIView(APIView):
     def get(self,request):

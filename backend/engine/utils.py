@@ -29,11 +29,8 @@ def compute_path_fuel(G, path, vehicle):
         edges = G.get_edge_data(u, v)
         if not edges:
             continue
-        # pick first edge
-        for key in edges:
-            edge = edges[key]
-            total_fuel += compute_edge_cost(edge, vehicle)
-            break
+        best_edge = min(edges.values(), key=lambda e: compute_edge_cost(e, vehicle))
+        total_fuel += compute_edge_cost(best_edge, vehicle)
     return total_fuel
 
 # ------------------------------
@@ -121,3 +118,18 @@ def haversine_km(point1, point2):
 
     a = math.sin(dphi/2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda/2)**2
     return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+def estimate_ride_fare(distance_km, time_min):
+    # Calibrated against common urban Pakistan ride-hailing ranges.
+    base_fare = 150.0
+    per_km = 21.0
+    per_min = 2.2
+    platform_fee = 50.0
+
+    fare = base_fare + (distance_km * per_km) + (time_min * per_min) + platform_fee
+
+    # Light trip-length uplift so medium/long trips do not underprice.
+    if distance_km > 10:
+        fare += (distance_km - 10) * 4.0
+
+    return round(max(fare, 0), 2)

@@ -25,7 +25,7 @@ def get_preprocess_signature():
 # ------------------------------
 # 🔧 Preprocess Graph
 # ------------------------------
-def preprocess_graph(G):
+def preprocess_graph(G, signature=None):
     for u, v, key, data in G.edges(keys=True, data=True):
         length_m = data.get("length", 1)
         length_km = length_m / 1000
@@ -35,7 +35,7 @@ def preprocess_graph(G):
         data["speed_kph"] = speed_kph
         data["travel_time"] = travel_time
 
-    G.graph["preprocess_signature"] = get_preprocess_signature()
+    G.graph["preprocess_signature"] = signature or get_preprocess_signature()
     G.graph["created_at"] = time.time()
     return G
 
@@ -83,7 +83,8 @@ def build_corridor(start, end, width):
 # 🌍 Core Loader (Corridor + Expansion)
 # ------------------------------
 def load_graph(start: dict, end: dict):
-    
+    current_signature = get_preprocess_signature()
+
     distance_km = haversine_km(start, end)
 
     # Initial corridor width
@@ -102,7 +103,19 @@ def load_graph(start: dict, end: dict):
         cached = r.get(cache_key)
         if cached:
             print(f"[osm_loader] Cache hit (width={width})")
-            G = pickle.loads(cached)
+            try:
+                G = pickle.loads(cached)
+            except Exception:
+                print("[osm_loader] Corrupted cache entry, deleting and rebuilding")
+                r.delete(cache_key)
+                continue
+
+            cached_signature = G.graph.get("preprocess_signature")
+            if cached_signature != current_signature:
+                print("[osm_loader] Stale(old) preprocess signature, rebuilding cache")
+                r.delete(cache_key)
+                continue
+
             G.graph["cache_status"] = "Loaded from cache"
             return normalize_graph_nodes(G)
 
@@ -138,7 +151,7 @@ def load_graph(start: dict, end: dict):
         # Process + Cache
         # ------------------------------
         G = normalize_graph_nodes(G)
-        G = preprocess_graph(G)
+        G = preprocess_graph(G, signature=current_signature)
         print("after preprocess")
 
         r.set(cache_key, pickle.dumps(G))
@@ -164,6 +177,6 @@ def load_graph(start: dict, end: dict):
     )
 
     G = normalize_graph_nodes(G)
-    G = preprocess_graph(G)
+    G = preprocess_graph(G, signature=current_signature)
 
     return G

@@ -32,7 +32,7 @@ export function useRouting() {
   // ── API health check ──────────────────────────────────
   useEffect(() => { checkApiHealth().then(setApiOnline) }, [])
 
-  // ── Fetch live OGRA petrol price on mount ─────────────
+  // ── Fetch live Petrol (Super) price from backend ──────
   useEffect(() => {
     setFuelPriceLoading(true)
     getPakistanPetrolPrice()
@@ -150,7 +150,7 @@ export function useRouting() {
         source,
         destination: dest,
         vehicle:    { mileage, idle_consumption: idleRate },
-        fuel_price: fuelPrice,    // ← live OGRA price sent to backend
+        fuel_price: fuelPrice,
       })
       setRouteData(data)
       setActiveMode('fuel')
